@@ -16,8 +16,8 @@ defmodule Reditex.AuthMiddleware do
 
         if Timex.before?(expt, now) do
           case RedditApi.access_token(refresh, true) do
-            {:ok, %{"token" => ntoken} = s} ->
-              auth_response(s, uid)
+            {:ok, %{"access_token" => ntoken} = response} ->
+              auth_response(Map.put(response, "refresh_token", refresh), uid)
               {:ok, Map.put(s, :token, ntoken)}
             _ ->
               {:ok, Map.put(s, :error, :auth)}

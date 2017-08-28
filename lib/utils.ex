@@ -1,4 +1,23 @@
 defmodule Utils do
+  use Telex.Dsl
+
+  require Logger
+
+  def sub_after({:ok, js}) do
+    case get_in js, ["data", "after"] do
+      nil -> ""
+      x -> x
+    end
+  end
+  def sub_after(_), do: ""
+
+  def stack_list_pop(stack) do
+    case String.split(stack, ",") |> List.pop_at(-1) do
+      {_, []} -> ""
+      {_elem, rest} -> Enum.join(rest, ",")
+    end
+  end
+
   def subreddits_names({:ok, js}) do
     case get_in js, ["data", "children", Access.all(), "data", "display_name"] do
       nil -> []
@@ -7,4 +26,33 @@ defmodule Utils do
     end
   end
   def subreddits_names(_), do: []
+
+  def subreddit_keyboard(subreddit, subscribed) do
+    {subs_text, subs_data} = if subscribed, do: {"Unsubscribe", "unsubscribe:#{subreddit}"}, else: {"Subscribe", "subscribe:#{subreddit}"}
+
+    [[[text: "View", callback_data: "show:subreddit:#{subreddit}"]],
+     [[text: subs_text, callback_data: subs_data]],
+     [[text: "Subreddits", callback_data: "show:subreddits:page:actual"]]]
+    |> create_inline
+  end
+
+  def list_keyboard(l, prefix, first, last) do
+    veryprev = [text: "<<", callback_data: "#{prefix}:page:veryprev"]
+    prev = [text: "<", callback_data: "#{prefix}:page:prev"]
+    next = [text: ">", callback_data: "#{prefix}:page:next"]
+
+    bottom_menu =
+      case {first, last} do
+        {true, true} -> [[]]
+        {true, _} -> [[next]]
+        {_, true} -> [[veryprev, prev]]
+        _ -> [[veryprev, prev, next]]
+      end
+
+    data_list = l |> Enum.map(fn {name, data} ->
+      [[text: name, callback_data: "#{prefix}:#{data}"]]
+    end)
+
+    (data_list ++ bottom_menu) |> create_inline
+  end
 end

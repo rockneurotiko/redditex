@@ -42,25 +42,25 @@ defmodule RedditApi do
   def to_json({:ok, %{body: body}}), do: {:ok, Poison.decode!(body)}
   def to_json(e), do: e
 
-  def me(token) do
-    url = uri("/me")
+  def generic(token, u, ops \\ []) do
+    params = ops |> Enum.map(fn {k, v} -> "#{k}=#{v}" end) |> Enum.join("&")
+    uuri = if String.length(params) == 0, do: u, else: "#{u}?#{params}"
+
+    url = uri(uuri)
     headers = auth(token)
 
     HTTPoison.get(url, headers) |> to_json
   end
 
+  def me(token) do
+    generic(token, "/api/v1/me")
+  end
+
   def subreddits(token, ops \\ []) do
-
-    limit = Keyword.get(ops, :limit, 25)
-    count = Keyword.get(ops, :count, 0)
-    before = Keyword.get(ops, :before, "")
-    aafter = Keyword.get(ops, :after, "")
-    show = Keyword.get(ops, :show, "all")
     where = Keyword.get(ops, :where, "subscriber")
+    base = [limit: 25, count: 0, before: "", after: "", show: "all"]
+    params = Keyword.merge(base, ops)
 
-    url = uri("/subreddits/mine/#{where}?show=#{show}&limit=#{limit}&count=#{count}&before=#{before}&after=#{aafter}")
-    headers = auth(token)
-
-    HTTPoison.get(url, headers) |> to_json
+    generic(token, "/subreddits/mine/#{where}", params)
   end
 end

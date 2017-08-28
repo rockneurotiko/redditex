@@ -15,15 +15,21 @@ defmodule Reditex.Application do
 
     # Define workers and child supervisors to be supervised
     children = [
-      Plug.Adapters.Cowboy.child_spec(:http, Reditex.Router, [], port: port),
+      supervisor(Registry, [:unique, Registry.Subreddits, [partitions: System.schedulers_online()]]),
       worker(Mongo, [[name: :mongo, hostname: mhost, database: mdb, pool: DBConnection.Poolboy]]),
       supervisor(Telex, []),
       supervisor(Reditex, [:polling, Telex.Config.get(:reditex, :token)]),
+      Plug.Adapters.Cowboy.child_spec(:http, Reditex.Router, [], port: port)
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Reditex.Supervisor]
-    Supervisor.start_link(children, opts)
+    case Supervisor.start_link(children, opts) do
+      {:ok, _} = r ->
+        SubredditWatcher.create_initials
+        r
+      e -> e
+    end
   end
 end
