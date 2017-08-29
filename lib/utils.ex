@@ -3,12 +3,8 @@ defmodule Utils do
 
   require Logger
 
-  def sub_after({:ok, js}) do
-    case get_in js, ["data", "after"] do
-      nil -> ""
-      x -> x
-    end
-  end
+  def sub_after({:ok, js}), do: sub_after(js)
+  def sub_after(%{"data" => %{"after" => aafter}}), do: aafter
   def sub_after(_), do: ""
 
   def stack_list_pop(stack) do
@@ -30,29 +26,32 @@ defmodule Utils do
   def subreddit_keyboard(subreddit, subscribed) do
     {subs_text, subs_data} = if subscribed, do: {"Unsubscribe", "unsubscribe:#{subreddit}"}, else: {"Subscribe", "subscribe:#{subreddit}"}
 
-    [[[text: "View", callback_data: "show:subreddit:#{subreddit}"]],
+    [[[text: "View", callback_data: "show:subreddit:#{subreddit}:page:actual"]],
      [[text: subs_text, callback_data: subs_data]],
      [[text: "Subreddits", callback_data: "show:subreddits:page:actual"]]]
     |> create_inline
   end
 
-  def list_keyboard(l, prefix, first, last) do
+  def listing_arrows(prefix, first, last) do
     veryprev = [text: "<<", callback_data: "#{prefix}:page:veryprev"]
     prev = [text: "<", callback_data: "#{prefix}:page:prev"]
     next = [text: ">", callback_data: "#{prefix}:page:next"]
 
-    bottom_menu =
-      case {first, last} do
-        {true, true} -> [[]]
-        {true, _} -> [[next]]
-        {_, true} -> [[veryprev, prev]]
-        _ -> [[veryprev, prev, next]]
-      end
+    case {first, last} do
+      {true, true} -> [[]]
+      {true, _} -> [[next]]
+      {_, true} -> [[veryprev, prev]]
+      _ -> [[veryprev, prev, next]]
+    end
+  end
+
+  def list_keyboard(l, prefix, first, last, extra \\ []) do
+    bottom_menu = listing_arrows(prefix, first, last)
 
     data_list = l |> Enum.map(fn {name, data} ->
       [[text: name, callback_data: "#{prefix}:#{data}"]]
     end)
 
-    (data_list ++ bottom_menu) |> create_inline
+    (data_list ++ bottom_menu ++ extra) |> create_inline
   end
 end

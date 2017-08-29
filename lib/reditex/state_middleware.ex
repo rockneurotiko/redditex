@@ -5,8 +5,8 @@ defmodule Reditex.StateMiddleware do
     state = Map.put(@default, "uid", uid)
 
     case Mongito.get_state(uid, state) do
-      {:ok, %{"stack" => stack, "post_stack" => post_stack}} ->
-        {:ok, Map.merge(s, %{stack: stack, post_stack: post_stack})}
+      {:ok, %{"stack" => stack}} ->
+        {:ok, Map.merge(s, %{stack: stack})}
       _ ->
         {:ok, Map.put(s, :error, :state)}
     end

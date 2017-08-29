@@ -1,5 +1,4 @@
 defmodule RedditApi do
-
   require Logger
 
   @base "https://www.reddit.com/api/v1"
@@ -62,5 +61,21 @@ defmodule RedditApi do
     params = Keyword.merge(base, ops)
 
     generic(token, "/subreddits/mine/#{where}", params)
+  end
+
+  def subreddit_posts(subreddit, token, ops \\ [])
+  def subreddit_posts("_front", token, ops) do
+    base = [g: "GLOBAL"]
+    params = Keyword.merge(base, ops)
+
+    generic(token, "/", params)
+  end
+
+  def subreddit_posts(subreddit, token, ops) do
+    kind = Keyword.get(ops, :kind, "hot")
+    base = [g: "GLOBAL"]
+    params = Keyword.merge(base, ops)
+
+    generic(token, "/r/#{subreddit}/#{kind}", params)
   end
 end

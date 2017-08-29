@@ -8,8 +8,6 @@ defmodule Reditex.UserMiddleware do
          # {:ok, _} <- HousePlanner.Db.user_to_group(uid, gid)
       do
 
-      IO.puts "GROUP: #{gid}, USER: #{uid}"
-
       {:ok, Map.merge(s, %{gid: gid, uid: uid})}
     else
       e ->

@@ -26,6 +26,10 @@ defmodule Mongito do
 
   # SUBSCRIPTIONS
 
+  def get_users_subscribed(subreddit) do
+    Mongo.find(:mongo, "subscriptions", %{"subreddit" => subreddit}, projection: %{"uid" => 1}, pool: DBConnection.Poolboy) |> Enum.to_list |> Enum.map(&(get_in(&1, ["uid"]))) |> Enum.uniq
+  end
+
   def get_subscriptions(uid \\ nil) do
     m = if is_nil(uid), do: %{}, else: %{"uid" => uid}
     Mongo.find(:mongo, "subscriptions", m, projection: %{"subreddit" => 1}, pool: DBConnection.Poolboy) |> Enum.to_list |> Enum.map(&(Map.get(&1, "subreddit"))) |> Enum.uniq
@@ -72,5 +76,17 @@ defmodule Mongito do
 
   def set_post_stack(uid, stack) do
     Mongo.find_one_and_update(:mongo, "states", %{"uid" => uid}, %{"$set" => %{"post_stack" => stack}}, pool: DBConnection.Poolboy)
+  end
+
+  def get_post_stack(uid, subreddit) do
+    Mongo.find_one(:mongo, "post_stack", %{"uid" => uid, "subreddit" => subreddit}, pool: DBConnection.Poolboy)
+  end
+
+  def set_post_stack(uid, subreddit, stack) do
+    case Mongo.find_one_and_update(:mongo, "post_stack", %{"uid" => uid, "subreddit" => subreddit}, %{"$set" => %{"stack" => stack}}, pool: DBConnection.Poolboy) do
+      {:ok, nil} ->
+        Mongo.insert_one(:mongo, "post_stack", %{"uid" => uid, "subreddit" => subreddit, "stack" => stack}, pool: DBConnection.Poolboy)
+        e -> e
+    end
   end
 end
