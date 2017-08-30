@@ -1,4 +1,6 @@
 defmodule Post do
+  require Logger
+
   def extract_first_post(data) do
     elems = data |> get_in(["data", "children", Access.all()]) |> Enum.filter(&(! get_in &1, ["data", "stickied"] )) |> Enum.take(1)
     case elems do
@@ -7,8 +9,8 @@ defmodule Post do
     end
   end
 
-  defp extract_metadata(%{"permalink" => permalink, "ups" => ups, "title" => title, "author" => author}) do
-    %{"permalink" => permalink, "ups" => ups, "title" => title, "author" => author}
+  defp extract_metadata(%{"permalink" => permalink, "ups" => ups, "title" => title, "author" => author, "subreddit_name_prefixed" => subreddit_name}) do
+    %{"permalink" => permalink, "ups" => ups, "title" => title, "author" => author, "subreddit" => String.slice(subreddit_name, 2..-1)}
   end
   defp extract_metadata(_data), do: %{}
 
@@ -29,13 +31,27 @@ defmodule Post do
   defp extract_post_kind_data(_), do: %{}
 
 
-  def post_to_text(%{"type" => typ, "url" => url, "permalink" => perma, "ups" => ups, "title" => title, "author" => author} = post) do
-    header = "[#{title}](#{url})" |> String.replace("*", "\*")
-    bottom = "\n----\n[<#{typ} by #{author} (↑ #{ups})>](https://reddit.com#{perma})"
+  defp escape(t) do
+    t
+    |> String.replace("*", "\\*")
+    |> String.replace("_", "\\_")
+    |> String.replace("(", "\\(")
+    |> String.replace(")", "\\)")
+    |> String.replace("[", "\\[")
+    |> String.replace("]", "\\]")
+  end
+
+  def post_to_text(%{"type" => typ, "url" => url, "permalink" => perma, "ups" => ups, "title" => title, "author" => author, "subreddit" => subreddit} = post) do
+    t = Map.get(post, "text", "") |> escape
+
+    header = "[#{title}](#{url})\n#{t}\n"
+    bottom = "----\n[<#{typ} by #{author} in #{subreddit} (↑ #{ups})>](https://reddit.com#{perma})"
 
     diff = (String.length(header) + String.length(bottom)) - 4096
 
     header = String.slice(header, 0, String.length(header) - diff)
+
+    Logger.info header <> bottom
 
     {:ok, header <> bottom}
   end

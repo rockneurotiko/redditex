@@ -21,7 +21,6 @@ defmodule Handlers.Commands do
       end
 
       def handle({:command, :subscribe, %{text: text} = msg}, name, %{uid: uid}) do
-        Logger.info "TEXT: #{text}"
         case Regex.run(@subreddit, text) do
           nil ->
             answer msg, "Bad formatted subreddit", bot: name
