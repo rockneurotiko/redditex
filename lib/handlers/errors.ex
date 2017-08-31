@@ -12,13 +12,13 @@ defmodule Handlers.Errors do
 
       def handle({:command, :auth, msg}, name, %{uid: uid}) do
         url = RedditApi.initial_authorize_url(uid)
-        answer msg, "Authenticate here: #{url}", bot: name
+        answer msg, "Authenticate here: [Authorize](#{url})", parse_mode: "Markdown", bot: name
       end
 
-      def handle(_, name, %{update: msg, uid: uid, error: :auth}) do
+      def handle(m, name, %{update: msg, uid: uid, error: :auth}) do
         Logger.info "ERROR NO AUTH"
         url = RedditApi.initial_authorize_url(uid)
-        answer msg, "You are not authenticated, follow the link: #{url}", bot: name
+        answer msg, "You are not authenticated, follow the link: [Authorize](#{url})", parse_mode: "Markdown", bot: name
       end
 
       def handle(_, name, %{update: msg, error: :state}) do

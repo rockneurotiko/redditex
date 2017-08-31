@@ -45,7 +45,7 @@ defmodule Post do
     t = Map.get(post, "text", "") |> escape
 
     header = "[#{title}](#{url})\n#{t}\n"
-    bottom = "----\n[<#{typ} by #{author} in #{subreddit} (↑ #{ups})>](https://reddit.com#{perma})"
+    bottom = "----\n[<#{typ} by #{author} (↑ #{ups})>](https://reddit.com#{perma}) in ##{subreddit}"
 
     diff = (String.length(header) + String.length(bottom)) - 4096
 

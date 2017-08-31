@@ -4,6 +4,9 @@ defmodule RedditApi do
   @base "https://www.reddit.com/api/v1"
   @oauthbase "https://oauth.reddit.com"
 
+  @redirect_uri "http://127.0.0.1:8080/authorize_callback"
+  @redirect_uri "http://web.neurotiko.com/redirectmereddit"
+
   def clean_path(path), do: if String.starts_with?(path, "/"), do: path, else: "/#{path}"
   def uri(path, base \\ @oauthbase), do: "#{base}#{clean_path(path)}"
 
@@ -13,7 +16,9 @@ defmodule RedditApi do
     url = uri("/authorize", @base)
     cid = Telex.Config.get(:reditex, :reddit_client, "")
 
-    "#{url}?client_id=#{cid}&response_type=code&state=#{uid}&redirect_uri=http://127.0.0.1:8080/authorize_callback&duration=permanent&scope=identity mysubreddits read wikiread" |> URI.encode
+    state = uid
+
+    "#{url}?client_id=#{cid}&response_type=code&state=#{state}&redirect_uri=#{@redirect_uri}&duration=permanent&scope=identity mysubreddits read wikiread" |> URI.encode
   end
 
   def access_token(code, refresh \\ false) do
@@ -27,7 +32,7 @@ defmodule RedditApi do
     body = if refresh do
       [grant_type: "refresh_token", refresh_token: code]
     else
-      [grant_type: "authorization_code", code: code, redirect_uri: "http://127.0.0.1:8080/authorize_callback"]
+      [grant_type: "authorization_code", code: code, redirect_uri: @redirect_uri]
     end
 
     with {:ok, %{body: bodys}} <- HTTPoison.post(url, {:form, body}, headers),

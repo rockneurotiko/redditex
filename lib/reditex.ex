@@ -1,14 +1,15 @@
 defmodule Reditex do
   use Telex.Bot,
     name: :reditex,
-    commands: [[command: "help", name: :help],
+    commands: [[command: "start", name: :start],
+               [command: "help", name: :help],
                [command: "auth", name: :auth],
                [command: "subscribe", name: :subscribe],
                [command: "mysubs", name: :mysubs]],
     middlewares: [Reditex.UserMiddleware,
                   Reditex.AuthMiddleware,
                   Reditex.StateMiddleware,
-                 Reditex.PostStackMiddleware]
+                  Reditex.PostStackMiddleware]
 
   use Telex.Dsl
 
@@ -40,6 +41,8 @@ defmodule Reditex do
   end
 
   # HANDLERS
+
+  use Handlers.Auth
 
   use Handlers.Errors
 

@@ -53,7 +53,7 @@ defmodule SubredditWatcher do
     Logger.warn "TODO"
     case Post.post_to_text(post) do
       {:ok, text} ->
-        Telex.send_message u, text, bot: @name
+        Telex.send_message u, text, parse_mode: "Markdown", bot: @name
       _ ->
         :err
     end
@@ -63,7 +63,7 @@ defmodule SubredditWatcher do
     Logger.warn "TODO"
     case Post.post_to_text(post) do
       {:ok, text} ->
-        Telex.send_message u, text, bot: @name
+        Telex.send_message u, text, parse_mode: "Markdown", bot: @name
       _ ->
         :err
     end
@@ -73,7 +73,7 @@ defmodule SubredditWatcher do
     Logger.warn "TODO"
     case Post.post_to_text(post) do
       {:ok, text} ->
-        Telex.send_message u, text, bot: @name
+        Telex.send_message u, text, parse_mode: "Markdown", bot: @name
       _ ->
         :err
     end
@@ -82,7 +82,7 @@ defmodule SubredditWatcher do
   def send_data_post(%{"type" => "self"} = post, u) do
     case Post.post_to_text(post) do
       {:ok, text} ->
-        Telex.send_message u, text, bot: @name
+        Telex.send_message u, text, parse_mode: "Markdown", bot: @name
       _ ->
         :err
     end
@@ -91,7 +91,7 @@ defmodule SubredditWatcher do
   def send_data_post(%{"type" => "link"} = post, u) do
     case Post.post_to_text(post) do
       {:ok, text} ->
-        Telex.send_message u, text, bot: @name
+        Telex.send_message u, text, parse_mode: "Markdown", bot: @name
       _ ->
         :err
     end
@@ -100,7 +100,7 @@ defmodule SubredditWatcher do
   def send_data_post(%{"type" => "url"} = post, u) do
     case Post.post_to_text(post) do
       {:ok, text} ->
-        Telex.send_message u, text, bot: @name
+        Telex.send_message u, text, parse_mode: "Markdown", bot: @name
       _ ->
         :err
     end
